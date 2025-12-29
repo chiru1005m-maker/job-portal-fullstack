@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up — Job Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="logo">Job Portal</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <span id="userBanner"></span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="auth-container">
+      <h2>Create an account</h2>
+      <form id="signupForm" class="auth-form">
+        <label for="signupName">Full name</label>
+        <input id="signupName" name="name" type="text" required />
+
+        <label for="signupEmail">Email</label>
+        <input id="signupEmail" name="email" type="email" required />
+
+        <label for="signupPassword">Password</label>
+        <input id="signupPassword" name="password" type="password" required />
+
+        <label for="signupConfirm">Confirm password</label>
+        <input id="signupConfirm" name="confirm" type="password" required />
+
+        <label for="signupRole">I am a</label>
+        <select id="signupRole" name="role" required>
+          <option value="JobSeeker">Job Seeker</option>
+          <option value="Employer">Employer</option>
+        </select>
+
+        <button type="submit" class="btn">Create Account</button>
+        <div class="formMsg" aria-live="polite"></div>
+      </form>
+
+      <p class="small-link">Already have an account? <a href="login.html">Login</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2025 Job Portal • All Rights Reserved</div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

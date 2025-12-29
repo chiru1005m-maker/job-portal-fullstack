@@ -1,0 +1,8 @@
+node_modules/
+target/
+.DS_Store
+*.db
+dist/
+build/
+.envnode_modules/ 
+target/ 
