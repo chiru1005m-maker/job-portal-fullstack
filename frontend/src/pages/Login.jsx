@@ -18,21 +18,17 @@ export default function Login() {
       const r = await api.post('/api/auth/login', { username, password });
       const { token, username: uname, role } = r.data;
       
-      // 1. Store credentials
       localStorage.setItem('token', token);
       localStorage.setItem('username', uname);
       localStorage.setItem('role', role);
       
-      // 2. Set API token for future requests
       setAuthToken(token);
-      
-      // 3. Trigger a storage event so App.jsx notices the change without a reload
       window.dispatchEvent(new Event('storage'));
-      
-      // 4. Navigate to Home
       nav('/');
     } catch (err) {
-      setError(err.response?.data || 'Login failed. Please check your credentials.');
+      // FIX: Extract message as string to prevent React Error #31
+      const msg = err.response?.data?.message || err.response?.data || 'Login failed. Please check your credentials.';
+      setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
     } finally {
       setLoading(false);
     }
@@ -45,7 +41,8 @@ export default function Login() {
         <h2 style={styles.title}>Welcome Back</h2>
         <p style={styles.subtitle}>Sign in to access MNC opportunities</p>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
+        {/* Safety: error is forced to string */}
+        {error && <div style={styles.errorBox}>{String(error)}</div>}
 
         <form onSubmit={submit} style={styles.form}>
           <div style={styles.inputGroup}>
@@ -85,104 +82,20 @@ export default function Login() {
   );
 }
 
+// ... styles remain exactly as you have them ...
 const styles = {
-  container: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '85vh',
-    backgroundColor: '#f8f9fa',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    padding: '40px',
-    borderRadius: '16px',
-    boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
-    width: '100%',
-    maxWidth: '420px',
-    textAlign: 'center',
-    border: '1px solid #eee'
-  },
-  iconContainer: {
-    fontSize: '40px',
-    marginBottom: '10px'
-  },
-  title: {
-    margin: '0 0 8px 0',
-    color: '#1a1a1a',
-    fontSize: '26px',
-    fontWeight: '700'
-  },
-  subtitle: {
-    margin: '0 0 30px 0',
-    color: '#6c757d',
-    fontSize: '15px'
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  },
-  inputGroup: {
-    textAlign: 'left'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#495057'
-  },
-  input: {
-    width: '100%',
-    padding: '12px 15px',
-    borderRadius: '8px',
-    border: '1px solid #ced4da',
-    fontSize: '16px',
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-    outline: 'none'
-  },
-  button: {
-    padding: '14px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '700',
-    cursor: 'pointer',
-    marginTop: '10px',
-    transition: 'transform 0.1s, background-color 0.2s'
-  },
-  buttonDisabled: {
-    padding: '14px',
-    backgroundColor: '#a0c4ff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    cursor: 'not-allowed',
-    marginTop: '10px'
-  },
-  errorBox: {
-    backgroundColor: '#fff5f5',
-    color: '#e03131',
-    padding: '12px',
-    borderRadius: '8px',
-    marginBottom: '20px',
-    fontSize: '14px',
-    border: '1px solid #ffc9c9',
-    textAlign: 'left'
-  },
-  footerText: {
-    marginTop: '30px',
-    fontSize: '14px',
-    color: '#495057'
-  },
-  link: {
-    color: '#007bff',
-    textDecoration: 'none',
-    fontWeight: '700'
-  }
+  container: { display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '85vh', backgroundColor: '#f8f9fa' },
+  card: { backgroundColor: '#ffffff', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', width: '100%', maxWidth: '420px', textAlign: 'center', border: '1px solid #eee' },
+  iconContainer: { fontSize: '40px', marginBottom: '10px' },
+  title: { margin: '0 0 8px 0', color: '#1a1a1a', fontSize: '26px', fontWeight: '700' },
+  subtitle: { margin: '0 0 30px 0', color: '#6c757d', fontSize: '15px' },
+  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  inputGroup: { textAlign: 'left' },
+  label: { display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#495057' },
+  input: { width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #ced4da', fontSize: '16px', boxSizing: 'border-box', outline: 'none' },
+  button: { padding: '14px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: '700', cursor: 'pointer', marginTop: '10px' },
+  buttonDisabled: { padding: '14px', backgroundColor: '#a0c4ff', color: 'white', border: 'none', borderRadius: '8px', fontSize: '16px', cursor: 'not-allowed', marginTop: '10px' },
+  errorBox: { backgroundColor: '#fff5f5', color: '#e03131', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #ffc9c9', textAlign: 'left' },
+  footerText: { marginTop: '30px', fontSize: '14px', color: '#495057' },
+  link: { color: '#007bff', textDecoration: 'none', fontWeight: '700' }
 };
