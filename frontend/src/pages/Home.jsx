@@ -1,138 +1,75 @@
-import React, { useEffect, useState } from 'react'
-import api from '../api'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import api from '../api';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
-  const [jobs, setJobs] = useState([])
-  const [q, setQ] = useState('')
-  const [page, setPage] = useState(0)
-  const [size] = useState(20)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
-  
-  const nav = useNavigate()
-  const role = localStorage.getItem('role')
-  const currentUser = localStorage.getItem('username')
+  const [jobs, setJobs] = useState([]);
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState(null);
 
-  const load = async () => {
-    setError(null); 
-    setLoading(true)
-    const params = { page, size }
-    if (q) params.q = q
-    
+  const fetchJobs = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const r = await api.get('/api/jobs', { params })
-      const data = Array.isArray(r.data) ? r.data : (r.data.content ? r.data.content : [])
-      setJobs(data)
-    } catch (err) { 
-      setJobs([]); 
-      // FIX: Extract message as string to prevent React Error #31
-      const msg = err.response?.data?.message || err.response?.data || 'Failed to load jobs';
+      const res = await api.get(`/api/jobs?search=${search}&page=${page}`);
+      setJobs(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      // FIX: Force error to string to prevent Error #31 crash
+      const msg = err.response?.data?.message || err.response?.data || 'Failed to fetch jobs';
       setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
-    } finally { 
-      setLoading(false) 
-    }
-  }
-
-  useEffect(() => { load(); }, [q, page])
-
-  const handleApply = async (job) => {
-    try {
-      await api.post('/api/applications', {
-        applicant: currentUser,
-        owner: job.owner,
-        jobTitle: job.title,
-        coverLetter: "Interested in this MNC position."
-      });
-      alert(`Successfully applied for ${job.title}!`);
-    } catch (err) {
-      alert("Error applying: " + (err.response?.data?.message || "Make sure you are logged in."));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (jobId) => {
-    if (!window.confirm("Are you sure?")) return;
-    try {
-      await api.delete(`/api/jobs/${jobId}`);
-      alert("Job deleted successfully");
-      load();
-    } catch (err) {
-      alert("Error deleting job: " + (err.response?.data?.message || "Unauthorized"));
-    }
-  };
+  useEffect(() => {
+    fetchJobs();
+  }, [page]);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h3 style={{ fontSize: '24px', marginBottom: '20px' }}>Latest MNC Opportunities</h3>
+    <div style={{ textAlign: 'center' }}>
+      <h1>Latest MNC Opportunities</h1>
       
-      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
+      <div style={{ marginBottom: '20px' }}>
         <input 
-          placeholder='Search jobs...' 
-          value={q} 
-          onChange={e => { setQ(e.target.value); setPage(0); }} 
+          placeholder="Search jobs..." 
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           style={{ padding: '10px', width: '300px', borderRadius: '4px', border: '1px solid #ddd' }}
         />
-        <button onClick={load} style={styles.searchBtn} disabled={loading}>
+        <button 
+          onClick={() => { setPage(1); fetchJobs(); }} 
+          disabled={loading}
+          style={{ marginLeft: '10px', padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+        >
+          {/* FIX: Ensure button text toggles correctly */}
           {loading ? 'Loading...' : 'Search'}
         </button>
-        {role === 'Employer' && (
-          <Link to='/post' style={styles.postLink}>+ Post New Job</Link>
-        )}
       </div>
 
-      {/* Safety: error is forced to string */}
-      {error && <div style={{ color: 'red', marginBottom: 8 }}>{String(error)}</div>}
+      {error && <div style={{ color: 'red', marginBottom: '20px' }}>{String(error)}</div>}
 
-      {loading ? (
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>Searching for jobs...</div>
-      ) : (
-        <div style={styles.grid}>
-          {jobs.length === 0 ? (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center', color: '#666' }}>No jobs found.</div>
-          ) : (
-            jobs.map((job) => (
-              <div key={job.id} style={styles.card}>
-                <div style={styles.badge}>{job.owner || 'MNC'}</div>
-                <h3 style={styles.jobTitle}>{job.title}</h3>
-                <p style={styles.companyName}>🏢 Verified Employer</p>
-                <p style={styles.description}>
-                  {job.description?.substring(0, 100) || 'No description available'}...
-                </p>
-                <div style={styles.footer}>
-                  <button onClick={() => nav(`/job/${job.id}`)} style={styles.viewBtn}>Details</button>
-                  {role === 'Employer' && currentUser === job.owner ? (
-                    <button onClick={() => handleDelete(job.id)} style={styles.deleteBtn}>Delete</button>
-                  ) : (
-                    <button onClick={() => handleApply(job)} style={styles.applyBtn}>Apply Now</button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
+        {jobs.length > 0 ? jobs.map(job => (
+          <div key={job.id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', width: '100%', maxWidth: '600px', textAlign: 'left', backgroundColor: 'white' }}>
+            <h3 style={{ margin: '0 0 10px 0' }}>{String(job.title)}</h3>
+            <p style={{ color: '#666' }}>{String(job.description).substring(0, 100)}...</p>
+            {/* FIX: Safety guard for owner object */}
+            <p style={{ fontSize: '13px', fontWeight: 'bold' }}>
+              Posted by: {job.owner?.username || String(job.owner || 'MNC Partner')}
+            </p>
+            <Link to={`/jobs/${job.id}`} style={{ color: '#007bff', textDecoration: 'none', fontWeight: 'bold' }}>View Details →</Link>
+          </div>
+        )) : !loading && <p>No jobs found matching your search.</p>}
+      </div>
 
-      <div style={{ marginTop: 30, textAlign: 'center' }}>
-        <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page <= 0} style={styles.pageBtn}>Prev</button>
-        <span style={{ margin: '0 15px', fontWeight: 'bold' }}>Page {page + 1}</span>
-        <button onClick={() => setPage(p => p + 1)} disabled={jobs.length < size} style={styles.pageBtn}>Next</button>
+      <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center' }}>
+        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1 || loading}>Prev</button>
+        <span>Page {page}</span>
+        <button onClick={() => setPage(p => p + 1)} disabled={loading || jobs.length < 10}>Next</button>
       </div>
     </div>
-  )
+  );
 }
-
-const styles = {
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
-  card: { backgroundColor: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #eee', display: 'flex', flexDirection: 'column' },
-  badge: { backgroundColor: '#e7f3ff', color: '#007bff', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', marginBottom: '10px', width: 'fit-content' },
-  jobTitle: { fontSize: '18px', margin: '0 0 5px 0', color: '#333', fontWeight: 'bold' },
-  companyName: { fontSize: '14px', margin: '0 0 15px 0', color: '#666' },
-  description: { fontSize: '14px', color: '#555', flexGrow: 1, lineHeight: '1.5' },
-  footer: { marginTop: '15px', display: 'flex', gap: '10px' },
-  viewBtn: { flex: 1, padding: '8px 12px', backgroundColor: '#f0f2f5', color: '#333', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' },
-  applyBtn: { flex: 1, padding: '8px 12px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' },
-  deleteBtn: { flex: 1, padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' },
-  searchBtn: { marginLeft: '10px', padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
-  postLink: { marginLeft: 'auto', padding: '10px 15px', backgroundColor: '#28a745', color: 'white', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' },
-  pageBtn: { padding: '8px 12px', backgroundColor: '#007bff', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', margin: '0 5px' }
-};
