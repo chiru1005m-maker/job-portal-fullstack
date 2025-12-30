@@ -15,7 +15,8 @@ export default function Home() {
   const currentUser = localStorage.getItem('username')
 
   const load = async () => {
-    setError(null); setLoading(true)
+    setError(null); 
+    setLoading(true)
     const params = { page, size }
     if (q) params.q = q
     
@@ -25,7 +26,9 @@ export default function Home() {
       setJobs(data)
     } catch (err) { 
       setJobs([]); 
-      setError(err.response?.data || 'Failed to load jobs') 
+      // FIX: Extract message as string to prevent React Error #31
+      const msg = err.response?.data?.message || err.response?.data || 'Failed to load jobs';
+      setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
     } finally { 
       setLoading(false) 
     }
@@ -33,7 +36,6 @@ export default function Home() {
 
   useEffect(() => { load(); }, [q, page])
 
-  // Function to handle Job Application
   const handleApply = async (job) => {
     try {
       await api.post('/api/applications', {
@@ -44,19 +46,18 @@ export default function Home() {
       });
       alert(`Successfully applied for ${job.title}!`);
     } catch (err) {
-      alert("Error applying for job. Make sure you are logged in.");
+      alert("Error applying: " + (err.response?.data?.message || "Make sure you are logged in."));
     }
   };
 
-  // Function to handle Job Deletion
   const handleDelete = async (jobId) => {
-    if (!window.confirm("Are you sure you want to delete this job listing?")) return;
+    if (!window.confirm("Are you sure?")) return;
     try {
       await api.delete(`/api/jobs/${jobId}`);
       alert("Job deleted successfully");
-      load(); // Refresh the list
+      load();
     } catch (err) {
-      alert("Error deleting job: " + (err.response?.data || "Unauthorized"));
+      alert("Error deleting job: " + (err.response?.data?.message || "Unauthorized"));
     }
   };
 
@@ -66,7 +67,7 @@ export default function Home() {
       
       <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center' }}>
         <input 
-          placeholder='Search jobs (e.g. Google, Java)' 
+          placeholder='Search jobs...' 
           value={q} 
           onChange={e => { setQ(e.target.value); setPage(0); }} 
           style={{ padding: '10px', width: '300px', borderRadius: '4px', border: '1px solid #ddd' }}
@@ -79,7 +80,8 @@ export default function Home() {
         )}
       </div>
 
-      {error && <div style={{ color: 'red', marginBottom: 8 }}>{error}</div>}
+      {/* Safety: error is forced to string */}
+      {error && <div style={{ color: 'red', marginBottom: 8 }}>{String(error)}</div>}
 
       {loading ? (
         <div style={{ textAlign: 'center', marginTop: '40px' }}>Searching for jobs...</div>
@@ -97,19 +99,11 @@ export default function Home() {
                   {job.description?.substring(0, 100) || 'No description available'}...
                 </p>
                 <div style={styles.footer}>
-                  <button onClick={() => nav(`/job/${job.id}`)} style={styles.viewBtn}>
-                    Details
-                  </button>
-                  
-                  {/* Logic: If Employer owns the job, show Delete. Otherwise show Apply */}
+                  <button onClick={() => nav(`/job/${job.id}`)} style={styles.viewBtn}>Details</button>
                   {role === 'Employer' && currentUser === job.owner ? (
-                    <button onClick={() => handleDelete(job.id)} style={styles.deleteBtn}>
-                      Delete
-                    </button>
+                    <button onClick={() => handleDelete(job.id)} style={styles.deleteBtn}>Delete</button>
                   ) : (
-                    <button onClick={() => handleApply(job)} style={styles.applyBtn}>
-                      Apply Now
-                    </button>
+                    <button onClick={() => handleApply(job)} style={styles.applyBtn}>Apply Now</button>
                   )}
                 </div>
               </div>
@@ -128,89 +122,17 @@ export default function Home() {
 }
 
 const styles = {
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '20px',
-  },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: '10px',
-    padding: '20px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    border: '1px solid #eee',
-    display: 'flex',
-    flexDirection: 'column'
-  },
-  badge: {
-    backgroundColor: '#e7f3ff',
-    color: '#007bff',
-    padding: '4px 10px',
-    borderRadius: '4px',
-    fontSize: '12px',
-    fontWeight: 'bold',
-    marginBottom: '10px',
-    width: 'fit-content'
-  },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' },
+  card: { backgroundColor: '#fff', borderRadius: '10px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', border: '1px solid #eee', display: 'flex', flexDirection: 'column' },
+  badge: { backgroundColor: '#e7f3ff', color: '#007bff', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', marginBottom: '10px', width: 'fit-content' },
   jobTitle: { fontSize: '18px', margin: '0 0 5px 0', color: '#333', fontWeight: 'bold' },
   companyName: { fontSize: '14px', margin: '0 0 15px 0', color: '#666' },
   description: { fontSize: '14px', color: '#555', flexGrow: 1, lineHeight: '1.5' },
   footer: { marginTop: '15px', display: 'flex', gap: '10px' },
-  viewBtn: {
-    flex: 1,
-    padding: '8px 12px',
-    backgroundColor: '#f0f2f5',
-    color: '#333',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '600'
-  },
-  applyBtn: {
-    flex: 1,
-    padding: '8px 12px',
-    backgroundColor: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '600'
-  },
-  deleteBtn: {
-    flex: 1,
-    padding: '8px 12px',
-    backgroundColor: '#dc3545',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: '600'
-  },
-  searchBtn: {
-    marginLeft: '10px',
-    padding: '10px 15px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  postLink: {
-    marginLeft: 'auto',
-    padding: '10px 15px',
-    backgroundColor: '#28a745',
-    color: 'white',
-    borderRadius: '4px',
-    textDecoration: 'none',
-    fontWeight: 'bold'
-  },
-  pageBtn: {
-    padding: '8px 12px',
-    backgroundColor: '#007bff',
-    border: 'none',
-    color: 'white',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    margin: '0 5px',
-  }
-}
+  viewBtn: { flex: 1, padding: '8px 12px', backgroundColor: '#f0f2f5', color: '#333', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' },
+  applyBtn: { flex: 1, padding: '8px 12px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' },
+  deleteBtn: { flex: 1, padding: '8px 12px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: '600' },
+  searchBtn: { marginLeft: '10px', padding: '10px 15px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+  postLink: { marginLeft: 'auto', padding: '10px 15px', backgroundColor: '#28a745', color: 'white', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' },
+  pageBtn: { padding: '8px 12px', backgroundColor: '#007bff', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', margin: '0 5px' }
+};

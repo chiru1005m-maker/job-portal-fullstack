@@ -12,7 +12,6 @@ export default function PostJob() {
   
   const role = localStorage.getItem('role')
 
-  // Security Check
   if (role !== 'Employer') {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -28,7 +27,6 @@ export default function PostJob() {
     setError(null); 
     setSuccess(null);
 
-    // Validation
     if (!title || title.trim().length < 3) { 
       setError('Title must be at least 3 characters'); 
       return 
@@ -41,17 +39,17 @@ export default function PostJob() {
     setLoading(true)
     try {
       const owner = localStorage.getItem('username');
-      const r = await api.post('/api/jobs', { 
+      await api.post('/api/jobs', { 
         owner: owner,
         title: title.trim(), 
         description: desc.trim() 
       })
       setSuccess('Job posted successfully!')
-      
-      // Redirect to home after 1.5 seconds so they can see the success message
       setTimeout(() => nav('/'), 1500);
     } catch (err) {
-      setError(err.response?.data || 'Failed to post job')
+      // FIX: Extract message as string to prevent React Error #31
+      const msg = err.response?.data?.message || err.response?.data || 'Failed to post job';
+      setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
     } finally {
       setLoading(false)
     }
@@ -64,7 +62,7 @@ export default function PostJob() {
         <p style={styles.subtitle}>Fill in the details to find your next hire</p>
 
         <form onSubmit={submit} style={styles.form}>
-          {error && <div style={styles.errorBox}>{error}</div>}
+          {error && <div style={styles.errorBox}>{String(error)}</div>}
           {success && <div style={styles.successBox}>{success}</div>}
 
           <div style={styles.inputGroup}>
@@ -80,7 +78,7 @@ export default function PostJob() {
           <div style={styles.inputGroup}>
             <label style={styles.label}>Description</label>
             <textarea 
-              placeholder="Describe the role and MNC requirements..."
+              placeholder="Describe the role..."
               value={desc} 
               onChange={e => setDesc(e.target.value)} 
               style={{ ...styles.input, height: '150px', resize: 'vertical' }}
@@ -90,10 +88,7 @@ export default function PostJob() {
           <button disabled={loading} style={loading ? styles.btnDisabled : styles.btn}>
             {loading ? 'Posting...' : 'Post Job'}
           </button>
-          
-          <button type="button" onClick={() => nav('/')} style={styles.cancelBtn}>
-            Cancel
-          </button>
+          <button type="button" onClick={() => nav('/')} style={styles.cancelBtn}>Cancel</button>
         </form>
       </div>
     </div>
