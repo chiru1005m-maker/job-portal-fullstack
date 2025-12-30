@@ -56,10 +56,14 @@ public class JobController {
     @PutMapping("/{id}")
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Employer') or hasAuthority('Admin')")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody Map<String,String> body){ Optional<Job> oj = jobRepository.findById(id); if (oj.isEmpty()) return ResponseEntity.notFound().build(); Job job = oj.get(); if (body.containsKey("title")) job.setTitle(body.get("title")); if (body.containsKey("description")) job.setDescription(body.get("description")); jobRepository.save(job); return ResponseEntity.ok(job); }
-
-    @DeleteMapping("/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('Employer') or hasAuthority('Admin')")
-    public ResponseEntity<?> delete(@PathVariable Integer id){ Optional<Job> oj = jobRepository.findById(id); if (oj.isEmpty()) return ResponseEntity.notFound().build(); jobRepository.delete(oj.get()); return ResponseEntity.noContent().build(); }
+// Inside your JobController or AdminController
+@DeleteMapping("/{id}")
+public ResponseEntity<?> deleteJob(@PathVariable Long id) {
+    return jobRepository.findById(id).map(job -> {
+        jobRepository.delete(job);
+        return ResponseEntity.ok("Job deleted successfully");
+    }).orElse(ResponseEntity.notFound().build());
+}
 
     @GetMapping("/owner/{username}")
     public ResponseEntity<?> byOwner(@PathVariable String username){ Optional<User> ou = userRepository.findByUsername(username); if (ou.isEmpty()) return ResponseEntity.notFound().build(); return ResponseEntity.ok(jobRepository.findByOwner(ou.get())); }

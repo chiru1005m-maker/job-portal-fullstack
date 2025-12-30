@@ -24,11 +24,18 @@ export default function AdminDashboard() {
   useEffect(() => { loadData(); }, []);
 
   const deleteJob = async (id) => {
-    if (!window.confirm("Delete this job permanently?")) return;
-    await api.delete(`/api/jobs/${id}`);
-    loadData();
-  };
-
+  if (window.confirm("Are you sure you want to delete this job?")) {
+    try {
+      await api.delete(`/api/jobs/${id}`);
+      // Refresh the job list after deletion
+      setJobs(jobs.filter(job => job.id !== id));
+      alert("Job deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting job:", err);
+      alert("Failed to delete the job.");
+    }
+  }
+};
   if (loading) return <div style={{padding: '20px'}}>Loading Admin Panel...</div>;
 
   return (

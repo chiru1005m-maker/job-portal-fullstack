@@ -33,21 +33,32 @@ export default function Home() {
   useEffect(() => { 
     fetchJobs(); 
     setTip(jobTips[Math.floor(Math.random() * jobTips.length)]);
-    document.title = "Job Portal | Find Your Next Job"; // Updates the browser tab
   }, []);
+
+  const deleteJob = async (id) => {
+    if (window.confirm("Are you sure you want to delete this job?")) {
+      try {
+        await api.delete(`/api/jobs/${id}`);
+        // Remove the job from state immediately
+        setJobs(jobs.filter(job => job.id !== id));
+      } catch (err) {
+        console.error("Error deleting job:", err);
+        alert("Failed to delete job. Make sure the backend delete endpoint exists.");
+      }
+    }
+  };
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '2.5rem', color: '#333' }}>Find Your Next Job </h1>
+        <h1 style={{ fontSize: '2.5rem', color: '#333' }}>Find Your Next Job</h1>
         
-        {/* RANDOM COMMENT / TIP BOX */}
         <div style={tipContainerStyle}>
           <p style={tipTextStyle}>{tip}</p>
         </div>
       </header>
       
-      {/* ADVANCED FILTER BAR */}
+      {/* FILTER BAR */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '40px', backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '12px' }}>
         <input 
           placeholder="Keyword..." 
@@ -68,15 +79,26 @@ export default function Home() {
         <button onClick={fetchJobs} style={searchBtn}>{loading ? '...' : 'Search'}</button>
       </div>
 
+      {/* JOB GRID */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
         {jobs.length > 0 ? jobs.map(job => (
           <div key={job.id} style={jobCard}>
             <span style={typeBadge}>{job.type || 'Full-time'}</span>
             <h3 style={{ marginBottom: '10px', fontSize: '1.2rem' }}>{String(job.title)}</h3>
             <p style={{ color: '#666', marginBottom: '15px', fontSize: '0.9rem' }}>
-               📍 {job.location || 'Remote'}
+                📍 {job.location || 'Remote'}
             </p>
-            <Link to={`/jobs/${job.id}`} style={viewBtn}>View Details →</Link>
+            
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+              <Link to={`/jobs/${job.id}`} style={viewBtn}>View Details →</Link>
+              
+              <button 
+                onClick={() => deleteJob(job.id)} 
+                style={deleteBtnStyle}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         )) : (
           <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '50px', color: '#999' }}>
@@ -91,9 +113,20 @@ export default function Home() {
 // --- Styles ---
 const inputStyle = { padding: '12px', borderRadius: '8px', border: '1px solid #ddd', minWidth: '200px', outline: 'none' };
 const searchBtn = { padding: '12px 30px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' };
-const jobCard = { padding: '25px', border: '1px solid #eee', borderRadius: '15px', backgroundColor: 'white', position: 'relative', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'transform 0.2s' };
+const jobCard = { padding: '25px', border: '1px solid #eee', borderRadius: '15px', backgroundColor: 'white', position: 'relative', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' };
 const typeBadge = { position: 'absolute', top: '15px', right: '15px', backgroundColor: '#e7f3ff', color: '#007bff', padding: '5px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold' };
-const viewBtn = { textDecoration: 'none', color: '#007bff', fontWeight: 'bold', display: 'inline-block' };
+const viewBtn = { textDecoration: 'none', color: '#007bff', fontWeight: 'bold' };
+
+const deleteBtnStyle = {
+  padding: '6px 12px',
+  backgroundColor: '#ff4d4f',
+  color: 'white',
+  border: 'none',
+  borderRadius: '6px',
+  cursor: 'pointer',
+  fontSize: '0.85rem',
+  fontWeight: 'bold'
+};
 
 const tipContainerStyle = {
   backgroundColor: '#fff9db',
