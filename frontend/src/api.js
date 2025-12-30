@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// This checks if there is a 'VITE_API_URL' environment variable (used in production)
-// Otherwise, it falls back to your local Java server for testing
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+// 1. Matches the KEY name you have in Render Environment Variables
+// 2. Fallback uses your LIVE BACKEND URL (not the frontend URL)
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://job-portal-api-lghb.onrender.com';
 
 const api = axios.create({
   baseURL: baseURL,
