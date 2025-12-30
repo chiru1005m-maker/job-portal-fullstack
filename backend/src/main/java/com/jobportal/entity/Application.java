@@ -1,14 +1,22 @@
 package com.jobportal.entity;
 
-import jakarta.persistence.*;
 import java.time.Instant;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "applications")
 public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id; // Changed to Long for consistency
 
     @ManyToOne
     @JoinColumn(name = "job_id")
@@ -23,13 +31,14 @@ public class Application {
     @Column(columnDefinition = "TEXT")
     private String coverLetter;
 
-    private String status = "applied";
+    // Default status: "Pending" is more standard for job portals
+    private String status = "Pending"; 
 
     private Instant createdAt = Instant.now();
 
-    // getters / setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    // Getters / Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public Job getJob() { return job; }
     public void setJob(Job job) { this.job = job; }

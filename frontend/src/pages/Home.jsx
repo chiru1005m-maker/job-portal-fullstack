@@ -4,72 +4,66 @@ import { Link } from 'react-router-dom';
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);
-  const [search, setSearch] = useState('');
+  const [filters, setFilters] = useState({ search: '', type: '', location: '' });
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [error, setError] = useState(null);
 
   const fetchJobs = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get(`/api/jobs?search=${search}&page=${page}`);
-      setJobs(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      // FIX: Force error to string to prevent Error #31 crash
-      const msg = err.response?.data?.message || err.response?.data || 'Failed to fetch jobs';
-      setError(typeof msg === 'object' ? JSON.stringify(msg) : String(msg));
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const { search, type, location } = filters;
+    // We add active=true to the query string
+    const res = await api.get(`/api/jobs?search=${search}&type=${type}&location=${location}&active=true`);
+    setJobs(Array.isArray(res.data) ? res.data : []);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  useEffect(() => {
-    fetchJobs();
-  }, [page]);
+  useEffect(() => { fetchJobs(); }, []);
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      <h1>Latest MNC Opportunities</h1>
+    <div>
+      <h1 style={{ textAlign: 'center' }}>Find Your Next MNC Role</h1>
       
-      <div style={{ marginBottom: '20px' }}>
+      {/* ADVANCED FILTER BAR */}
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '30px' }}>
         <input 
-          placeholder="Search jobs..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{ padding: '10px', width: '300px', borderRadius: '4px', border: '1px solid #ddd' }}
+          placeholder="Keyword..." 
+          onChange={(e) => setFilters({...filters, search: e.target.value})}
+          style={inputStyle} 
         />
-        <button 
-          onClick={() => { setPage(1); fetchJobs(); }} 
-          disabled={loading}
-          style={{ marginLeft: '10px', padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
-        >
-          {/* FIX: Ensure button text toggles correctly */}
-          {loading ? 'Loading...' : 'Search'}
-        </button>
+        <select onChange={(e) => setFilters({...filters, type: e.target.value})} style={inputStyle}>
+          <option value="">All Types</option>
+          <option value="Full-time">Full-time</option>
+          <option value="Remote">Remote</option>
+          <option value="Contract">Contract</option>
+        </select>
+        <input 
+          placeholder="Location (City/Country)" 
+          onChange={(e) => setFilters({...filters, location: e.target.value})}
+          style={inputStyle} 
+        />
+        <button onClick={fetchJobs} style={searchBtn}>{loading ? '...' : 'Search'}</button>
       </div>
 
-      {error && <div style={{ color: 'red', marginBottom: '20px' }}>{String(error)}</div>}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
-        {jobs.length > 0 ? jobs.map(job => (
-          <div key={job.id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', width: '100%', maxWidth: '600px', textAlign: 'left', backgroundColor: 'white' }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>{String(job.title)}</h3>
-            <p style={{ color: '#666' }}>{String(job.description).substring(0, 100)}...</p>
-            {/* FIX: Safety guard for owner object */}
-            <p style={{ fontSize: '13px', fontWeight: 'bold' }}>
-              Posted by: {job.owner?.username || String(job.owner || 'MNC Partner')}
-            </p>
-            <Link to={`/jobs/${job.id}`} style={{ color: '#007bff', textDecoration: 'none', fontWeight: 'bold' }}>View Details →</Link>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+        {jobs.map(job => (
+          <div key={job.id} style={jobCard}>
+            <span style={typeBadge}>{job.type || 'Full-time'}</span>
+            <h3>{String(job.title)}</h3>
+            <p style={{color: '#666'}}>{job.location || 'Remote'}</p>
+            <Link to={`/jobs/${job.id}`} style={viewBtn}>View Details</Link>
           </div>
-        )) : !loading && <p>No jobs found matching your search.</p>}
-      </div>
-
-      <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', gap: '20px', alignItems: 'center' }}>
-        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1 || loading}>Prev</button>
-        <span>Page {page}</span>
-        <button onClick={() => setPage(p => p + 1)} disabled={loading || jobs.length < 10}>Next</button>
+        ))}
       </div>
     </div>
   );
 }
+
+const inputStyle = { padding: '10px', borderRadius: '4px', border: '1px solid #ddd', minWidth: '150px' };
+const searchBtn = { padding: '10px 25px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' };
+const jobCard = { padding: '20px', border: '1px solid #eee', borderRadius: '10px', backgroundColor: 'white', position: 'relative' };
+const typeBadge = { position: 'absolute', top: '10px', right: '10px', backgroundColor: '#e7f3ff', color: '#007bff', padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: 'bold' };
+const viewBtn = { textDecoration: 'none', color: '#007bff', fontWeight: 'bold', display: 'inline-block', marginTop: '10px' };

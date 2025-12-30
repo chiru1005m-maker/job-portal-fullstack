@@ -9,7 +9,6 @@ export default function App() {
 
   useEffect(() => {
     const handleStorageChange = () => {
-      // FORCE STRING: Ensure we aren't pulling an object string from localStorage
       const storedUser = localStorage.getItem('username');
       const storedRole = localStorage.getItem('role');
       setUser(storedUser);
@@ -24,7 +23,8 @@ export default function App() {
     if (t) {
       setAuthToken(t);
     } else {
-      const protectedPaths = ['/', '/my-applications', '/post', '/admin/import'];
+      // UPDATED: Added /admin/dashboard to protected paths
+      const protectedPaths = ['/', '/my-applications', '/post', '/admin/import', '/admin/dashboard'];
       if (protectedPaths.includes(window.location.pathname)) {
         nav('/login');
       }
@@ -54,18 +54,23 @@ export default function App() {
             
             {user ? (
               <>
+                {/* NEW: Admin specific links */}
+                {role === 'Admin' && (
+                  <Link to='/admin/dashboard' style={styles.link}>Admin Panel</Link>
+                )}
+
                 {role === 'Employer' && (
                   <>
                     <Link to='/post' style={styles.link}>Post Job</Link>
                     <Link to='/admin/import' style={styles.link}>Import CSV</Link>
                   </>
                 )}
+                
                 {role === 'JobSeeker' && (
                   <Link to='/my-applications' style={styles.link}>My Applications</Link>
                 )}
                 
                 <div style={styles.userSection}>
-                  {/* FIX: Use String() as a safety net to prevent Error #31 */}
                   <span style={styles.userName}>
                     👤 {typeof user === 'object' ? JSON.stringify(user) : String(user)} 
                     <small style={{fontWeight: 400}}> ({String(role)})</small>
@@ -90,7 +95,6 @@ export default function App() {
   )
 }
 
-// ... styles remain the same ...
 const styles = {
   header: { backgroundColor: '#ffffff', borderBottom: '1px solid #e0e0e0', padding: '0 20px', height: '70px', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
   navContainer: { maxWidth: '1200px', width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
