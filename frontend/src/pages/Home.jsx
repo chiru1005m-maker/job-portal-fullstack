@@ -32,14 +32,14 @@ export default function Home() {
 
   useEffect(() => { 
     fetchJobs(); 
-    // Set a random tip on load
     setTip(jobTips[Math.floor(Math.random() * jobTips.length)]);
+    document.title = "Job Portal | Find Your Next Job"; // Updates the browser tab
   }, []);
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
       <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '2.5rem', color: '#333' }}>Find Your Next MNC Role</h1>
+        <h1 style={{ fontSize: '2.5rem', color: '#333' }}>Find Your Next Job </h1>
         
         {/* RANDOM COMMENT / TIP BOX */}
         <div style={tipContainerStyle}>
