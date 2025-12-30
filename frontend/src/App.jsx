@@ -7,11 +7,13 @@ export default function App() {
   const [role, setRole] = useState(localStorage.getItem('role'))
   const nav = useNavigate()
 
-  // Sync state when localStorage changes (e.g., after login)
   useEffect(() => {
     const handleStorageChange = () => {
-      setUser(localStorage.getItem('username'));
-      setRole(localStorage.getItem('role'));
+      // FORCE STRING: Ensure we aren't pulling an object string from localStorage
+      const storedUser = localStorage.getItem('username');
+      const storedRole = localStorage.getItem('role');
+      setUser(storedUser);
+      setRole(storedRole);
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -22,7 +24,6 @@ export default function App() {
     if (t) {
       setAuthToken(t);
     } else {
-      // Redirect to login if accessing protected routes without a token
       const protectedPaths = ['/', '/my-applications', '/post', '/admin/import'];
       if (protectedPaths.includes(window.location.pathname)) {
         nav('/login');
@@ -64,7 +65,11 @@ export default function App() {
                 )}
                 
                 <div style={styles.userSection}>
-                  <span style={styles.userName}>👤 {user} <small style={{fontWeight: 400}}>({role})</small></span>
+                  {/* FIX: Use String() as a safety net to prevent Error #31 */}
+                  <span style={styles.userName}>
+                    👤 {typeof user === 'object' ? JSON.stringify(user) : String(user)} 
+                    <small style={{fontWeight: 400}}> ({String(role)})</small>
+                  </span>
                   <button onClick={logout} style={styles.logoutBtn}>Logout</button>
                 </div>
               </>
@@ -85,81 +90,16 @@ export default function App() {
   )
 }
 
+// ... styles remain the same ...
 const styles = {
-  header: {
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e0e0e0',
-    padding: '0 20px',
-    height: '70px',
-    display: 'flex',
-    alignItems: 'center',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-  },
-  navContainer: {
-    maxWidth: '1200px',
-    width: '100%',
-    margin: '0 auto',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center'
-  },
-  logo: {
-    fontSize: '22px',
-    fontWeight: 'bold',
-    margin: 0,
-    letterSpacing: '-0.5px'
-  },
-  navLinks: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px'
-  },
-  link: {
-    textDecoration: 'none',
-    color: '#495057',
-    fontWeight: '600',
-    fontSize: '15px',
-    transition: 'color 0.2s'
-  },
-  userSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    marginLeft: '10px',
-    paddingLeft: '20px',
-    borderLeft: '1px solid #eee'
-  },
-  userName: {
-    fontSize: '14px',
-    color: '#333',
-    fontWeight: '600'
-  },
-  logoutBtn: {
-    padding: '6px 14px',
-    backgroundColor: '#fff',
-    color: '#dc3545',
-    border: '1px solid #dc3545',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '600',
-    transition: 'all 0.2s'
-  },
-  registerBtn: {
-    textDecoration: 'none',
-    backgroundColor: '#007bff',
-    color: 'white',
-    padding: '8px 18px',
-    borderRadius: '4px',
-    fontWeight: '600',
-    fontSize: '15px'
-  },
-  mainContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '30px 20px'
-  }
+  header: { backgroundColor: '#ffffff', borderBottom: '1px solid #e0e0e0', padding: '0 20px', height: '70px', display: 'flex', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 4px rgba(0,0,0,0.05)' },
+  navContainer: { maxWidth: '1200px', width: '100%', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  logo: { fontSize: '22px', fontWeight: 'bold', margin: 0, letterSpacing: '-0.5px' },
+  navLinks: { display: 'flex', alignItems: 'center', gap: '20px' },
+  link: { textDecoration: 'none', color: '#495057', fontWeight: '600', fontSize: '15px', transition: 'color 0.2s' },
+  userSection: { display: 'flex', alignItems: 'center', gap: '15px', marginLeft: '10px', paddingLeft: '20px', borderLeft: '1px solid #eee' },
+  userName: { fontSize: '14px', color: '#333', fontWeight: '600' },
+  logoutBtn: { padding: '6px 14px', backgroundColor: '#fff', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: '600', transition: 'all 0.2s' },
+  registerBtn: { textDecoration: 'none', backgroundColor: '#007bff', color: 'white', padding: '8px 18px', borderRadius: '4px', fontWeight: '600', fontSize: '15px' },
+  mainContent: { maxWidth: '1200px', margin: '0 auto', padding: '30px 20px' }
 }
