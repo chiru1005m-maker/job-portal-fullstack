@@ -32,7 +32,7 @@ public class Job {
     private String type;      
     private String location;  
     
-    @Column(nullable = false)
+    @Column(name = "active", nullable = true)
     private boolean active = true; 
 
     private Instant createdAt = Instant.now();
