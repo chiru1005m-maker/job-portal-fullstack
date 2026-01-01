@@ -26,18 +26,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                .csrf(csrf -> csrf.disable()) // Modern way to disable CSRF
+                .cors(cors -> {}) // Enable CORS
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/jobs/**").permitAll()
+                        
+                        // --- ADDED THIS LINE TO ALLOW DELETIONS ---
+                        .requestMatchers(HttpMethod.DELETE, "/api/jobs/**").permitAll() 
+                        
                         .requestMatchers(HttpMethod.POST, "/api/applications/apply").permitAll()
                         .anyRequest().authenticated()
                 );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-        http.cors();
         return http.build();
     }
 
