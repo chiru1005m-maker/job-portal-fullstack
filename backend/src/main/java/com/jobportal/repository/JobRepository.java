@@ -9,7 +9,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.jobportal.entity.Job;
 import com.jobportal.entity.User;
 
-public interface JobRepository extends JpaRepository<Job, Integer> {
+// Changed Integer to Long to match the ID type in your Job Entity
+public interface JobRepository extends JpaRepository<Job, Long> {
+    
     List<Job> findByOwner(User owner);
+    
     Page<Job> findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String title, String description, Pageable pageable);
 }
