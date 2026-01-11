@@ -20,7 +20,8 @@ import PostJob from './pages/PostJob'
 import MyApplications from './pages/MyApplications'
 import AdminImport from './pages/AdminImport'
 import AdminDashboard from './pages/AdminDashboard'
-import EmployerDashboard from './pages/EmployerDashboard' // Added this import
+import EmployerDashboard from './pages/EmployerDashboard'
+import SeekerDashboard from './pages/SeekerDashboard' // Added this import
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -46,6 +47,12 @@ createRoot(document.getElementById('root')).render(
             </ProtectedRoute>
           } />
 
+          <Route path='employer-dashboard' element={
+            <ProtectedRoute roles={["Employer", "Admin"]}>
+              <EmployerDashboard/>
+            </ProtectedRoute>
+          } />
+
           {/* Admin Only Access */}
           <Route path='admin/dashboard' element={
             <ProtectedRoute roles={["Admin"]}>
@@ -60,9 +67,10 @@ createRoot(document.getElementById('root')).render(
             </ProtectedRoute>
           } />
 
-          <Route path='employer/dashboard' element={
-            <ProtectedRoute roles={["Employer", "Admin"]}>
-              <EmployerDashboard/>
+          {/* ADDED: Seeker Dashboard Route - Matches App.jsx links */}
+          <Route path='seeker-dashboard' element={
+            <ProtectedRoute roles={["JobSeeker"]}>
+              <SeekerDashboard/>
             </ProtectedRoute>
           } />
           

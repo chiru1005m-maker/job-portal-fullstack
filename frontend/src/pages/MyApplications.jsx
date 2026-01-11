@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import { Link } from 'react-router-dom';
 
 export default function MyApplications() {
   const [apps, setApps] = useState([]);
@@ -8,7 +9,8 @@ export default function MyApplications() {
 
   const loadDashboard = () => {
     setLoading(true);
-    api.get('/api/applications/my')
+    // Fetches applications for the logged-in user
+    api.get('/api/applications/me')
       .then(r => {
         setApps(Array.isArray(r.data) ? r.data : []);
         setLoading(false);
@@ -25,16 +27,21 @@ export default function MyApplications() {
   }, []);
 
   const withdraw = async (appId) => {
+    // Alert triggers correctly as seen in your screenshot
     if (!window.confirm("Are you sure you want to withdraw this application?")) return;
     
     try {
-      // Sending delete request to backend
+      // Logic: This matches the @DeleteMapping("/{id}") in your ApplicationController.java
+      // It uses the specific Application ID from the database
       await api.delete(`/api/applications/${appId}`);
       alert("Application withdrawn successfully.");
-      loadDashboard(); // Refresh list
+      loadDashboard(); 
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data || 'Withdrawal failed';
-      alert("Error: " + (typeof msg === 'object' ? JSON.stringify(msg) : String(msg)));
+      console.error("Full Error Object:", err);
+      // Detailed error handling to resolve the 'Withdrawal failed' popup
+      const serverError = err.response?.data?.message || err.response?.data;
+      const msg = serverError || 'Withdrawal failed';
+      alert("Withdrawal Error: " + (typeof msg === 'object' ? JSON.stringify(msg) : String(msg)));
     }
   };
 
@@ -43,31 +50,66 @@ export default function MyApplications() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>JobSeeker Dashboard</h2>
-      <p style={styles.subtitle}>View your active applications and shared CVs.</p>
+      <Link to="/" style={{ textDecoration: 'none', color: '#007bff', fontSize: '14px' }}>← Back to Job Board</Link>
+      
+      <h2 style={styles.title}>JobSeeker Dashboard 📁</h2>
+      <p style={styles.subtitle}>View your active applications and track your hiring status.</p>
 
       {apps.length === 0 ? (
-        <div style={styles.empty}>You have no active applications.</div>
+        <div style={styles.empty}>
+          <p>You have no active applications.</p>
+          <Link to="/" style={styles.browseBtn}>Browse Jobs</Link>
+        </div>
       ) : (
         <div style={styles.list}>
           {apps.map(app => (
-            <div key={app.id} style={styles.card}>
+            <div key={app.id} style={{
+              ...styles.card,
+              // Green border appears when status is 'Hired'
+              borderLeft: app.status === 'Hired' ? '6px solid #28a745' : '1px solid #eee'
+            }}>
               <div style={styles.cardHeader}>
-                <h3 style={styles.jobTitle}>{String(app.job?.title || 'Job Opening')}</h3>
+                <h3 style={styles.jobTitle}>{app.job?.title || 'Job Opening'}</h3>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <span style={styles.statusBadge}>{app.status || 'Applied'}</span>
+                    <span style={{ 
+                        ...styles.statusBadge, 
+                        backgroundColor: app.status === 'Hired' ? '#d4edda' : '#e7f3ff',
+                        color: app.status === 'Hired' ? '#155724' : '#007bff',
+                        border: app.status === 'Hired' ? '1px solid #c3e6cb' : '1px solid #b8daff'
+                    }}>
+                        {app.status || 'Applied'}
+                    </span>
+                    {/* The button that triggers the withdrawal logic */}
                     <button onClick={() => withdraw(app.id)} style={styles.withdrawBtn}>Withdraw</button>
                 </div>
               </div>
               
               <div style={styles.details}>
-                <p><strong>Employer:</strong> {app.job?.owner?.username || 'MNC Partner'}</p>
-                {app.cvLink && (
-                  <div style={styles.cvRow}>
-                    <strong>My CV:</strong> <a href={app.cvLink} target="_blank" rel="noopener noreferrer" style={styles.link}>View Link ↗</a>
+                {app.status === 'Hired' && (
+                  <div style={styles.hiredBanner}>
+                    🎉 <strong>Congratulations!</strong> You have been hired for this position!
                   </div>
                 )}
-                <p style={{marginTop: '10px', fontStyle: 'italic'}}>"{String(app.coverLetter).substring(0, 100)}..."</p>
+
+                <p><strong>Employer:</strong> {app.job?.owner?.username || 'Verified Employer'}</p>
+                
+                {app.cvLink && (
+                  <div style={styles.cvRow}>
+                    <strong>Shared CV:</strong> 
+                    <a 
+                        href={`http://localhost:8080/uploads/${app.cvLink}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={styles.link}
+                    >
+                        View Document ↗
+                    </a>
+                  </div>
+                )}
+                
+                <p style={{marginTop: '10px', fontStyle: 'italic', color: '#666'}}>
+                    "{app.coverLetter ? (app.coverLetter.substring(0, 100) + '...') : 'No cover letter provided.'}"
+                </p>
               </div>
             </div>
           ))}
@@ -78,18 +120,21 @@ export default function MyApplications() {
 }
 
 const styles = {
-  container: { maxWidth: '900px', margin: '0 auto', padding: '20px' },
-  title: { fontSize: '28px', color: '#1a1a1a', marginBottom: '10px' },
+  container: { maxWidth: '900px', margin: '40px auto', padding: '20px' },
+  title: { fontSize: '28px', color: '#1a1a1a', marginBottom: '5px', marginTop: '15px' },
   subtitle: { color: '#666', marginBottom: '30px' },
-  card: { backgroundColor: '#fff', border: '1px solid #eee', borderRadius: '12px', padding: '20px', marginBottom: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' },
+  list: { display: 'flex', flexDirection: 'column', gap: '20px' },
+  card: { backgroundColor: '#fff', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' },
-  jobTitle: { margin: 0, color: '#007bff', fontSize: '20px' },
-  statusBadge: { backgroundColor: '#e7f3ff', color: '#007bff', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold' },
-  withdrawBtn: { padding: '5px 10px', backgroundColor: '#fff', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' },
+  jobTitle: { margin: 0, color: '#333', fontSize: '20px', fontWeight: 'bold' },
+  statusBadge: { padding: '5px 15px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', textTransform: 'uppercase' },
+  withdrawBtn: { padding: '5px 10px', backgroundColor: 'transparent', color: '#dc3545', border: '1px solid #dc3545', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' },
   details: { fontSize: '14px', color: '#444' },
-  cvRow: { marginTop: '8px', padding: '8px', backgroundColor: '#f0fff4', borderRadius: '6px', border: '1px solid #c6f6d5' },
-  link: { color: '#2f855a', fontWeight: 'bold', textDecoration: 'none' },
-  status: { textAlign: 'center', padding: '50px' },
-  error: { color: '#dc3545', padding: '15px', border: '1px solid #ffc9c9' },
-  empty: { textAlign: 'center', padding: '40px', color: '#999' }
+  hiredBanner: { backgroundColor: '#d4edda', color: '#155724', padding: '12px', borderRadius: '8px', marginBottom: '15px', border: '1px dashed #28a745' },
+  cvRow: { marginTop: '10px', padding: '10px', backgroundColor: '#f8f9fa', borderRadius: '6px', border: '1px solid #e9ecef' },
+  link: { color: '#007bff', fontWeight: 'bold', textDecoration: 'none' },
+  status: { textAlign: 'center', padding: '100px', fontSize: '18px', color: '#666' },
+  error: { color: '#721c24', backgroundColor: '#f8d7da', padding: '20px', borderRadius: '8px', margin: '20px' },
+  empty: { textAlign: 'center', padding: '60px', backgroundColor: '#f9f9f9', borderRadius: '15px', color: '#888' },
+  browseBtn: { display: 'inline-block', marginTop: '20px', padding: '10px 25px', backgroundColor: '#007bff', color: '#fff', borderRadius: '8px', textDecoration: 'none' }
 };

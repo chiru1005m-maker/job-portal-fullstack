@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Changed to Long for consistency
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "job_id")
@@ -28,15 +28,20 @@ public class Application {
 
     private String applicantEmail;
 
+    // Fixed: Added cvPath to match your React Frontend's expectations
+    private String cvPath;
+
+    // Kept for backward compatibility
+    private String cvLink;
+
     @Column(columnDefinition = "TEXT")
     private String coverLetter;
 
-    // Default status: "Pending" is more standard for job portals
     private String status = "Pending"; 
 
     private Instant createdAt = Instant.now();
 
-    // Getters / Setters
+    // --- Getters / Setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -48,6 +53,14 @@ public class Application {
 
     public String getApplicantEmail() { return applicantEmail; }
     public void setApplicantEmail(String applicantEmail) { this.applicantEmail = applicantEmail; }
+
+    // Getter and Setter for cvPath (What React uses)
+    public String getCvPath() { return cvPath; }
+    public void setCvPath(String cvPath) { this.cvPath = cvPath; }
+
+    // Getter and Setter for cvLink
+    public String getCvLink() { return cvLink; }
+    public void setCvLink(String cvLink) { this.cvLink = cvLink; }
 
     public String getCoverLetter() { return coverLetter; }
     public void setCoverLetter(String coverLetter) { this.coverLetter = coverLetter; }

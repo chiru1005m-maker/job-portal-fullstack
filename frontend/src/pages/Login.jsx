@@ -38,8 +38,8 @@ export default function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.iconContainer}>🔑</div>
-        <h2 style={styles.title}>Welcome Back</h2>
-        <p style={styles.subtitle}>Sign in to access MNC opportunities</p>
+        <h2 style={styles.title}>Welcome to JobConnect</h2>
+        <p style={styles.subtitle}>Sign in to explore Job Opportunities </p>
 
         {/* Safety: error is forced to string */}
         {error && <div style={styles.errorBox}>{String(error)}</div>}

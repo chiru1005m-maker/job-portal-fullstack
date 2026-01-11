@@ -1,29 +1,34 @@
--- Initial schema for Job Portal
+-- Updated schema for Job Portal
 
--- Use BIGINT/AUTO_INCREMENT for ids to match JPA Long ids
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  username TEXT UNIQUE NOT NULL,
-  email TEXT UNIQUE,
-  password_hash TEXT,
-  role TEXT NOT NULL DEFAULT 'JobSeeker',
-  created_at TIMESTAMP DEFAULT now()
+  username VARCHAR(255) UNIQUE NOT NULL,
+  email VARCHAR(255) UNIQUE,
+  password_hash VARCHAR(255),
+  role VARCHAR(50) NOT NULL DEFAULT 'JobSeeker',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS jobs (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  owner_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-  title TEXT NOT NULL,
+  owner_id BIGINT,
+  title VARCHAR(255) NOT NULL,
   description TEXT,
-  created_at TIMESTAMP DEFAULT now()
+  location VARCHAR(255), -- Added for Search
+  type VARCHAR(100),     -- Added for Search
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS applications (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  job_id BIGINT REFERENCES jobs(id) ON DELETE CASCADE,
-  applicant_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
-  applicant_email TEXT,
+  job_id BIGINT,
+  applicant_id BIGINT,
+  applicant_email VARCHAR(255),
   cover_letter TEXT,
-  status TEXT DEFAULT 'applied',
-  created_at TIMESTAMP DEFAULT now()
+  status VARCHAR(50) DEFAULT 'applied',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
+  FOREIGN KEY (applicant_id) REFERENCES users(id) ON DELETE SET NULL
 );

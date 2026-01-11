@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://job-portal-api-lghb.onrender.com',
+        target: 'https://localhost:8080',
         changeOrigin: true,
         secure: false,
       }

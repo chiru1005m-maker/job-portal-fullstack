@@ -45,3 +45,86 @@ If you don't want to install Maven locally, push your branch and CI will run (Gi
 - JJWT has been upgraded to 0.11.5 and `JwtUtil` updated to the new API.
 
 If you'd like, I can also open a PR with these changes and run CI for you.
+Run the full stack locally with Docker Compose
+
+This repository includes `docker-compose.full.yml` to start Postgres, the backend, and the frontend (static build served by nginx).
+
+Steps:
+
+1. Copy environment file and edit secrets if desired:
+
+```bash
+cp .env.example .env
+```
+
+2. Build and start services:
+
+```bash
+docker-compose -f docker-compose.full.yml up --build -d
+```
+
+3. Visit the app:
+- Backend: http://localhost:8080
+- Frontend: http://localhost:5173
+- Adminer: http://localhost:8081
+
+4. To run Playwright E2E tests against the running stack:
+
+```bash
+# install playwright browsers once
+cd frontend
+npx playwright install --with-deps
+# run E2E
+npm run test:e2e
+```
+
+Notes:
+- Flyway migrations will run automatically when the backend starts.
+- Use `docker-compose -f docker-compose.full.yml down` to stop and remove services.
+Quickstart: run locally ✅
+
+Backend (Spring Boot)
+
+- Build (requires Maven):
+
+```bash
+cd backend
+mvn -B -DskipTests=false clean package
+```
+
+- Run with Java:
+
+```bash
+java -jar backend/target/job-portal-backend-0.1.0.jar
+```
+
+- Or use Docker Compose:
+
+```bash
+docker-compose up --build
+```
+
+This will start the backend on http://localhost:8080 and persist H2 DB files under `backend/data`.
+
+Frontend (React + Vite)
+
+- Install and run dev server:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend dev server runs on http://localhost:5173 by default and expects the backend at http://localhost:8080.
+
+Notes about recent changes
+
+- The login endpoint now returns a `token` field alongside setting an HttpOnly cookie so SPAs can read the token if needed.
+- Fixed a compile issue in `ApplicationRepository` (missing import) and upgraded the default JWT secret to avoid HS256 key errors during tests.
+- A `docker-compose.yml` has been added to spin up the backend quickly.
+
+Next steps I can take on request:
+- Add a frontend Docker service to build & serve the UI
+- Add GitHub Actions CI to run tests & build
+- Implement more UI polish and validation
