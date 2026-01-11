@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="logo">Job Portal</h1>
+      <nav>
+        <a href="#features">Jobs</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+        <span id="userBanner"></span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h2>Find Your Dream Job</h2>
+        <p>Browse thousands of open positions and launch your career.</p>
+        <a class="btn" href="#features">View Openings</a>
+      </div>
+    </section>
+
+    <section id="features" class="container features">
+      <article>
+        <h3>Software Engineer</h3>
+        <p>Full-time • Remote</p>
+        <p>Looking for a frontend developer with React experience.</p>
+      </article>
+      <article>
+        <h3>Product Manager</h3>
+        <p>Contract • New York</p>
+        <p>Lead the roadmap for our new mobile application.</p>
+      </article>
+      <article>
+        <h3>UX Designer</h3>
+        <p>Full-time • London</p>
+        <p>Design intuitive user interfaces for enterprise clients.</p>
+      </article>
+    </section>
+
+    <section id="about" class="container about">
+      <h3>About Us</h3>
+      <p>We connect the best talent with top-tier companies worldwide.</p>
+    </section>
+
+    <section id="contact" class="container contact">
+      <h3>Contact Support</h3>
+      <form id="contactForm">
+        <label for="name">Name</label>
+        <input id="name" name="name" type="text" required />
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required />
+
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="4" required></textarea>
+
+        <button type="submit" class="btn">Send Message</button>
+      </form>
+      <div id="formResult" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2024 Job Portal • All Rights Reserved</div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

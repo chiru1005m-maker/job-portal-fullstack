@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: jobportal
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: jobportal
+    volumes:
+      - ./backend/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/jobportal
+      - SPRING_DATASOURCE_USERNAME=jobportal
+      - SPRING_DATASOURCE_PASSWORD=password
+      - APP_JWT_SECRET=change-this-secret-change-this-secret-00000000
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/data:/app/data
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+  # Optional lightweight DB admin interface
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8081:8080"
