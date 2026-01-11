@@ -26,6 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # --- Security & Environment ---
+uploads/
 .envnode_modules/
 .env
 .env.local
