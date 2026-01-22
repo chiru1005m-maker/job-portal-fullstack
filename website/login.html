@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login — Job Portal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="logo">Job Portal</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <span id="userBanner"></span>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="auth-container">
+      <h2>Sign in to your account</h2>
+      <form id="loginForm" class="auth-form">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" name="email" type="email" required />
+
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" name="password" type="password" required />
+
+        <button type="submit" class="btn">Sign In</button>
+        <div class="formMsg" aria-live="polite"></div>
+      </form>
+
+      <p class="small-link">Don't have an account? <a href="signup.html">Create one</a></p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© 2025 Job Portal • All Rights Reserved</div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

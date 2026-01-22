@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: jobportal-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/data:/app/data
+    environment:
+      - APP_JWT_SECRET=change-this-secret-change-this-secret-00000000
+      - SPRING_DATASOURCE_URL=jdbc:h2:file:./data/jobportal;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE
+    restart: unless-stopped
+
+# Optional: you can add a frontend service to build and serve a static frontend (not included by default)
