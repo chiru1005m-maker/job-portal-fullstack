@@ -42,6 +42,6 @@ Notes about recent changes
 - A `docker-compose.yml` has been added to spin up the backend quickly.
 
 Next steps I can take on request:
-- Add a frontend Docker service to build & serve the UI
-- Add GitHub Actions CI to run tests & build
-- Implement more UI polish and validation
+- Add a frontend Docker service to build & serve the UI.
+- Add GitHub Actions CI to run tests & build.
+- Implement more UI polish and validation.
